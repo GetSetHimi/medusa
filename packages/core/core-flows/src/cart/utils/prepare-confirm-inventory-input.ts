@@ -8,7 +8,6 @@ import {
   MedusaError,
   deepFlatMap,
 } from "@medusajs/framework/utils"
-
 export const requiredOrderFieldsForInventoryConfirmation = [
   "id",
   "version",
@@ -29,7 +28,6 @@ export const requiredOrderFieldsForInventoryConfirmation = [
   "items.variant.inventory_items.inventory.location_levels.stock_locations.sales_channels.id",
   "items.variant.inventory_items.inventory.location_levels.stock_locations.sales_channels.name",
 ]
-
 export const requiredVariantFieldsForInventoryConfirmation = [
   "manage_inventory",
   "allow_backorder",
@@ -45,7 +43,6 @@ export const requiredVariantFieldsForInventoryConfirmation = [
   "inventory_items.inventory.location_levels.stock_locations.sales_channels.id",
   "inventory_items.inventory.location_levels.stock_locations.sales_channels.name",
 ]
-
 interface ConfirmInventoryPreparationInput {
   product_variant_inventory_items: {
     variant_id: string
@@ -63,9 +60,8 @@ interface ConfirmInventoryPreparationInput {
     allow_backorder?: boolean
   }[]
   location_ids: string[]
-  stockAvailability: Map<string, Map<string, BigNumberInput>>
+  stockAvailability: Map<string, BigNumberInput>
 }
-
 interface ConfirmInventoryItem {
   id?: string
   inventory_item_id: string
@@ -74,7 +70,6 @@ interface ConfirmInventoryItem {
   quantity: BigNumberInput
   location_ids: string[]
 }
-
 /**
  * This function prepares the input for the confirm inventory workflow.
  * In essesnce, it maps a list of cart items to a list of inventory items,
@@ -95,12 +90,9 @@ export const prepareConfirmInventoryInput = (data: {
   const mapLocationAvailability = new Map<string, Map<string, BigNumberInput>>()
   const variantsWithLocationForChannel = new Set<string>()
   let hasManagedInventory = false
-
   const salesChannelId = data.input.sales_channel_id
-
   for (const updateItem of data.input.itemsToUpdate ?? []) {
     const updateItem_ = "data" in updateItem ? updateItem.data : updateItem
-
     const item = data.input.items.find(
       (item) => item.variant_id === updateItem_.variant_id
     )
@@ -108,7 +100,6 @@ export const prepareConfirmInventoryInput = (data: {
       item.quantity = updateItem_.quantity!
     }
   }
-
   deepFlatMap(
     data.input,
     "variants.inventory_items.inventory.location_levels.stock_locations.sales_channels",
@@ -122,11 +113,9 @@ export const prepareConfirmInventoryInput = (data: {
       if (!variants) {
         return
       }
-
       if (salesChannelId && sales_channels?.id === salesChannelId) {
         variantsWithLocationForChannel.add(variants.id)
       }
-
       if (location_levels && inventory_items) {
         const availability = MathBN.sub(
           location_levels.raw_stocked_quantity ??
@@ -136,11 +125,9 @@ export const prepareConfirmInventoryInput = (data: {
             location_levels.reserved_quantity ??
             0
         )
-
         if (!mapLocationAvailability.has(location_levels.location_id)) {
           mapLocationAvailability.set(location_levels.location_id, new Map())
         }
-
         const locationMap = mapLocationAvailability.get(
           location_levels.location_id
         )!
@@ -149,15 +136,12 @@ export const prepareConfirmInventoryInput = (data: {
           new BigNumber(availability)
         )
       }
-
       if (stock_locations && sales_channels?.id === salesChannelId) {
         stockLocationIds.add(stock_locations.id)
       }
-
       if (inventory_items) {
         const inventoryItemId = inventory_items.inventory_item_id
         const mapKey = `${inventoryItemId}-${inventory_items.variant_id}`
-
         if (!productVariantInventoryItems.has(mapKey)) {
           productVariantInventoryItems.set(mapKey, {
             variant_id: inventory_items.variant_id,
@@ -166,12 +150,10 @@ export const prepareConfirmInventoryInput = (data: {
           })
         }
       }
-
       if (!allVariants.has(variants.id)) {
         if (!hasManagedInventory && variants.manage_inventory) {
           hasManagedInventory = true
         }
-
         allVariants.set(variants.id, {
           id: variants.id,
           manage_inventory: variants.manage_inventory,
@@ -180,11 +162,9 @@ export const prepareConfirmInventoryInput = (data: {
       }
     }
   )
-
   if (!hasManagedInventory) {
     return { items: [] }
   }
-
   if (salesChannelId) {
     for (const variant of allVariants.values()) {
       if (
@@ -199,7 +179,6 @@ export const prepareConfirmInventoryInput = (data: {
       }
     }
   }
-
   const items = formatInventoryInput({
     product_variant_inventory_items: Array.from(
       productVariantInventoryItems.values()
@@ -209,10 +188,8 @@ export const prepareConfirmInventoryInput = (data: {
     items: data.input.items,
     variants: Array.from(allVariants.values()),
   })
-
   return { items }
 }
-
 const formatInventoryInput = ({
   product_variant_inventory_items,
   location_ids,
@@ -223,32 +200,25 @@ const formatInventoryInput = ({
   if (!product_variant_inventory_items.length) {
     return []
   }
-
   const variantsMap = new Map<
     string,
     ConfirmInventoryPreparationInput["variants"][0]
   >(variants.map((v) => [v.id, v]))
-
   const itemsToConfirm: ConfirmInventoryItem[] = []
-
   items.forEach((item) => {
     const variant = variantsMap.get(item.variant_id!)
-
     if (!variant?.manage_inventory) {
       return
     }
-
     const variantInventoryItems = product_variant_inventory_items.filter(
       (i) => i.variant_id === item.variant_id
     )
-
     if (!variantInventoryItems.length) {
       throw new MedusaError(
         MedusaError.Types.INVALID_DATA,
         `Variant ${item.variant_id} does not have any inventory items associated with it.`
       )
     }
-
     variantInventoryItems.forEach((variantInventoryItem) => {
       const locationsWithAvailability = location_ids.filter((locId) =>
         MathBN.gte(
@@ -258,7 +228,6 @@ const formatInventoryInput = ({
           MathBN.mult(variantInventoryItem.required_quantity, item.quantity)
         )
       )
-
       itemsToConfirm.push({
         id: item.id,
         inventory_item_id: variantInventoryItem.inventory_item_id,
@@ -271,6 +240,5 @@ const formatInventoryInput = ({
       })
     })
   })
-
   return itemsToConfirm
 }
