@@ -188,7 +188,10 @@ module.exports = defineConfig({
     {
       key: "brand",
       resolve: "src/modules/brand",
-      disable: process.env.ENABLE_INDEX_MODULE !== "true",
+    },
+    {
+      key: Modules.RBAC,
+      resolve: "@medusajs/rbac",
     },
   ],
 })

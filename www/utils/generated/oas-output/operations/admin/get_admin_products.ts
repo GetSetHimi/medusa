@@ -307,6 +307,7 @@
  *           type: boolean
  *           title: $exists
  *           description: Filter by whether a value for this parameter exists (not `null`).
+ *       title: created_at
  *   - name: updated_at
  *     in: query
  *     description: Filter by a product's update date.
@@ -426,6 +427,7 @@
  *           type: boolean
  *           title: $exists
  *           description: Filter by whether a value for this parameter exists (not `null`).
+ *       title: updated_at
  *   - name: deleted_at
  *     in: query
  *     description: Filter by a product's deletion date.
@@ -545,6 +547,7 @@
  *           type: boolean
  *           title: $exists
  *           description: Filter by whether a value for this parameter exists (not `null`).
+ *       title: deleted_at
  *   - name: $and
  *     in: query
  *     description: Join query parameters with an AND condition. Each object's content is the same type as the expected query parameters.
@@ -724,7 +727,7 @@
  *               description: Filter by whether a value for this parameter exists (not `null`).
  *         updated_at:
  *           type: object
- *           description: The variant's updated at.
+ *           description: Filter by the variant's update date.
  *           properties:
  *             $and:
  *               type: array
@@ -985,35 +988,61 @@
  *           oneOf:
  *             - type: string
  *               title: ean
- *               description: The variant's ean.
+ *               description: Filter by a variant's ean.
  *             - type: array
- *               description: The variant's ean.
+ *               description: Filter by variant eans.
  *               items:
  *                 type: string
  *                 title: ean
- *                 description: The ean's details.
+ *                 description: A variant's ean.
  *         upc:
  *           oneOf:
  *             - type: string
  *               title: upc
- *               description: The variant's upc.
+ *               description: Filter by a variant's upc.
  *             - type: array
- *               description: The variant's upc.
+ *               description: Filter by variant upcs.
  *               items:
  *                 type: string
  *                 title: upc
- *                 description: The upc's details.
+ *                 description: A variant's upc.
  *         barcode:
  *           oneOf:
  *             - type: string
  *               title: barcode
- *               description: The variant's barcode.
+ *               description: Filter by a variant's barcode.
  *             - type: array
- *               description: The variant's barcode.
+ *               description: Filter by variant barcodes.
  *               items:
  *                 type: string
  *                 title: barcode
- *                 description: The barcode's details.
+ *                 description: A variant's barcode.
+ *         with_deleted:
+ *           type: boolean
+ *           title: with_deleted
+ *           description: Whether to include deleted variants.
+ *   - name: with_deleted
+ *     in: query
+ *     description: Whether to include deleted products.
+ *     required: false
+ *     schema:
+ *       type: boolean
+ *       title: with_deleted
+ *       description: Whether to include deleted products.
+ *   - name: external_id
+ *     in: query
+ *     required: false
+ *     schema:
+ *       oneOf:
+ *         - type: string
+ *           title: external_id
+ *           description: Filter by the product's external ID.
+ *         - type: array
+ *           description: Filter by external IDs.
+ *           items:
+ *             type: string
+ *             title: external_id
+ *             description: The external ID.
  * security:
  *   - api_token: []
  *   - cookie_auth: []

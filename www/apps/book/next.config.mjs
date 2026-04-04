@@ -9,6 +9,7 @@ import {
   crossProjectLinksPlugin,
   recmaInjectMdxDataPlugin,
   remarkAttachFrontmatterDataPlugin,
+  validateHighlightsPlugin,
 } from "remark-rehype-plugins"
 import path from "path"
 import redirects from "./utils/redirects.mjs"
@@ -25,6 +26,9 @@ const withMDX = mdx({
         brokenLinkCheckerPlugin,
         {
           crossProjects: {
+            bloom: {
+              projectPath: path.resolve("..", "bloom"),
+            },
             resources: {
               projectPath: path.resolve("..", "resources"),
               hasGeneratedSlugs: true,
@@ -50,6 +54,9 @@ const withMDX = mdx({
         {
           baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
           projectUrls: {
+            bloom: {
+              url: process.env.NEXT_PUBLIC_BLOOM_URL,
+            },
             resources: {
               url: process.env.NEXT_PUBLIC_RESOURCES_URL,
             },
@@ -78,6 +85,7 @@ const withMDX = mdx({
           tagName: "code",
         },
       ],
+      [validateHighlightsPlugin, { verbose: false }],
       [rehypeSlug],
       [
         cloudinaryImgRehypePlugin,
@@ -115,6 +123,24 @@ const nextConfig = {
   transpilePackages: ["docs-ui"],
   async rewrites() {
     return {
+      beforeFiles: [
+        {
+          source:
+            "/:path((?!resources|api|ui|user-guide|cloud).*)index.html.md",
+          destination: "/md-content/:path*",
+        },
+        {
+          source: "/:path((?!resources|api|ui|user-guide|cloud).*)*",
+          has: [
+            {
+              type: "header",
+              key: "Accept",
+              value: ".*(text/markdown|text/plain).*",
+            },
+          ],
+          destination: "/md-content/:path*",
+        },
+      ],
       fallback: [
         {
           source: "/resources",

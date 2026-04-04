@@ -31,7 +31,7 @@
  *   content:
  *     application/json:
  *       schema:
- *         $ref: "#/components/schemas/AdminUpdateShippingOptionType"
+ *         $ref: "#/components/schemas/AdminUpdateShippingOption"
  * x-codeSamples:
  *   - lang: JavaScript
  *     label: JS SDK
@@ -79,7 +79,17 @@
  *   "500":
  *     $ref: "#/components/responses/500_error"
  * x-workflow: updateShippingOptionsWorkflow
- * x-events: []
+ * x-events:
+ *   - name: shipping-option.updated
+ *     payload: |-
+ *       ```ts
+ *       {
+ *         id, // The ID of the shipping option
+ *       }
+ *       ```
+ *     description: Emitted when shipping options are updated.
+ *     deprecated: false
+ *     since: 2.12.4
  * 
 */
 

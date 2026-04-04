@@ -14,7 +14,7 @@ This documentation provides a reference to the `deleteCartCreditLinesWorkflow`. 
 
 This workflow deletes one or more credit lines from a cart.
 
-<SourceCodeLink link="https://github.com/medusajs/medusa/blob/675091b4a5ad30101bf69d3459c3673d80c9f46f/packages/core/core-flows/src/cart/workflows/delete-cart-credit-lines.ts#L13" />
+<SourceCodeLink link="https://github.com/medusajs/medusa/blob/3c2ae85bf15ddcf5c29c2a2a8a79e3fe355717c5/packages/core/core-flows/src/cart/workflows/delete-cart-credit-lines.ts#L13" />
 
 ## Examples
 
@@ -36,7 +36,7 @@ export async function POST(
     .run({
       input: {
         "id": [
-          "id_U0PK0ogdIQd2NJb"
+          "id_FhJ1U1g6tL"
         ]
       }
     })
@@ -63,7 +63,7 @@ export default async function handleOrderPlaced({
     .run({
       input: {
         "id": [
-          "id_U0PK0ogdIQd2NJb"
+          "id_FhJ1U1g6tL"
         ]
       }
     })
@@ -90,7 +90,7 @@ export default async function myCustomJob(
     .run({
       input: {
         "id": [
-          "id_U0PK0ogdIQd2NJb"
+          "id_FhJ1U1g6tL"
         ]
       }
     })
@@ -118,7 +118,7 @@ const myWorkflow = createWorkflow(
       .runAsStep({
         input: {
           "id": [
-            "id_U0PK0ogdIQd2NJb"
+            "id_FhJ1U1g6tL"
           ]
         }
       })

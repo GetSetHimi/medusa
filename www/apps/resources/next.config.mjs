@@ -4,6 +4,7 @@ import {
   prerequisitesLinkFixerPlugin,
   recmaInjectMdxDataPlugin,
   typeListLinkFixerPlugin,
+  validateHighlightsPlugin,
   workflowDiagramLinkFixerPlugin,
 } from "remark-rehype-plugins"
 
@@ -28,6 +29,9 @@ const withMDX = mdx({
           },
           hasGeneratedSlugs: true,
           crossProjects: {
+            bloom: {
+              projectPath: path.resolve("..", "bloom"),
+            },
             docs: {
               projectPath: path.resolve("..", "book"),
             },
@@ -48,6 +52,7 @@ const withMDX = mdx({
         },
       ],
       ...mdxPluginOptions.options.rehypePlugins,
+      [validateHighlightsPlugin, { verbose: false }],
       [localLinksRehypePlugin],
       [typeListLinkFixerPlugin],
       [
@@ -285,6 +290,27 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ["@medusajs/icons", "@medusajs/ui", "elkjs"],
+  },
+  rewrites: async () => {
+    return {
+      beforeFiles: [
+        {
+          source: "/:path*/index.html.md",
+          destination: "/md-content/:path*",
+        },
+        {
+          source: "/:path*",
+          has: [
+            {
+              type: "header",
+              key: "Accept",
+              value: ".*(text/markdown|text/plain).*",
+            },
+          ],
+          destination: "/md-content/:path*",
+        },
+      ],
+    }
   },
 }
 

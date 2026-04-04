@@ -1,5 +1,5 @@
 import { ClaimReason, ClaimType } from "@medusajs/framework/utils"
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 import {
   createFindParams,
   createOperatorMap,
@@ -209,3 +209,7 @@ export const AdminPostClaimsConfirmRequestReqSchema = z.object({
 export type AdminPostClaimsConfirmRequestReqSchemaType = z.infer<
   typeof AdminPostClaimsConfirmRequestReqSchema
 >
+
+export const AdminDeleteClaimItemActionSchema = createSelectParams()
+
+export type AdminDeleteClaimItemActionSchemaType = z.infer<typeof AdminDeleteClaimItemActionSchema>

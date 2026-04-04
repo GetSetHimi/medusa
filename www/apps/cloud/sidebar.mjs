@@ -45,6 +45,18 @@ export const sidebar = [
             type: "link",
             title: "Projects",
             path: "/projects",
+            children: [
+              {
+                type: "link",
+                title: "Prerequisites",
+                path: "/projects/prerequisites",
+              },
+              {
+                type: "link",
+                title: "Rename Repository",
+                path: "/projects/rename-repo-branch",
+              },
+            ],
           },
           {
             type: "link",
@@ -75,10 +87,20 @@ export const sidebar = [
             children: [
               {
                 type: "link",
+                title: "Access Deployment",
+                path: "/deployments/access",
+              },
+              {
+                type: "link",
                 title: "Troubleshooting",
                 path: "/deployments/troubleshooting",
               },
             ],
+          },
+          {
+            type: "link",
+            title: "Account",
+            path: "/user",
           },
         ],
       },
@@ -87,6 +109,11 @@ export const sidebar = [
         title: "Resources",
         initialOpen: true,
         children: [
+          {
+            type: "link",
+            title: "Storefront",
+            path: "/storefront",
+          },
           {
             type: "link",
             title: "Database",
@@ -106,6 +133,18 @@ export const sidebar = [
             type: "link",
             title: "Cache",
             path: "/cache",
+          },
+          {
+            type: "link",
+            title: "Emails",
+            path: "/emails",
+            children: [
+              {
+                type: "link",
+                title: "React Email Templates",
+                path: "/emails/react-email",
+              },
+            ],
           },
         ],
       },

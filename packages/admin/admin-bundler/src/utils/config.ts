@@ -17,11 +17,15 @@ export async function getViteConfig(
     ? parseInt(process.env.HMR_PORT)
     : await getPort.default()
   const hmrOptions = getHmrConfig(hmrPort)
+  const allowedHosts = getAllowedHosts()
 
   const root = path.resolve(process.cwd(), ".medusa/client")
 
   const backendUrl = options.backendUrl ?? ""
   const storefrontUrl = options.storefrontUrl ?? ""
+  const authType = process.env.ADMIN_AUTH_TYPE ?? undefined
+  const jwtTokenStorageKey =
+    process.env.ADMIN_JWT_TOKEN_STORAGE_KEY ?? undefined
 
   const baseConfig: InlineConfig = {
     root,
@@ -47,13 +51,17 @@ export async function getViteConfig(
     define: {
       __BASE__: JSON.stringify(options.path),
       __BACKEND_URL__: JSON.stringify(backendUrl),
+      __AUTH_TYPE__: JSON.stringify(authType),
+      __JWT_TOKEN_STORAGE_KEY__: JSON.stringify(jwtTokenStorageKey),
       __STOREFRONT_URL__: JSON.stringify(storefrontUrl),
+      __MAX_UPLOAD_FILE_SIZE__: options.maxUploadFileSize === Infinity ? "Infinity" : JSON.stringify(options.maxUploadFileSize ?? 1024 * 1024),
     },
     server: {
       fs: {
         allow: [searchForWorkspaceRoot(process.cwd())],
       },
       hmr: hmrOptions,
+      ...(allowedHosts && { allowedHosts }),
     },
     plugins: [
       writeStaticFiles({
@@ -72,7 +80,9 @@ export async function getViteConfig(
   }
 
   // Inject plugin environment variables with vite define
-  const pluginEnv: Record<string, string | undefined> = { BACKEND_URL: backendUrl }
+  const pluginEnv: Record<string, string | undefined> = {
+    BACKEND_URL: backendUrl,
+  }
   for (const [key, value] of Object.entries(process.env)) {
     if (key.startsWith("PLUGIN_")) {
       pluginEnv[key.replace(/^PLUGIN_/, "")] = value
@@ -80,12 +90,48 @@ export async function getViteConfig(
   }
   baseConfig.define!["process.env"] = JSON.stringify(pluginEnv)
 
+  let finalConfig = baseConfig
   if (options.vite) {
     const customConfig = options.vite(baseConfig)
-    return mergeConfig(baseConfig, customConfig)
+    finalConfig = mergeConfig(baseConfig, customConfig)
   }
 
-  return baseConfig
+  // Handle HMR_BIND_HOST after merge to detect conflicts
+  if (process.env.HMR_BIND_HOST) {
+    if (
+      finalConfig.server?.hmr &&
+      typeof finalConfig.server.hmr === "object" &&
+      finalConfig.server.hmr.server
+    ) {
+      console.warn(
+        "HMR_BIND_HOST is set but a custom hmr.server is already configured. HMR_BIND_HOST will be ignored."
+      )
+    } else {
+      const { createServer } = require("http")
+      const hmrServer = createServer()
+      hmrServer.listen(hmrPort, process.env.HMR_BIND_HOST)
+      if (!finalConfig.server) {
+        finalConfig.server = {}
+      }
+      if (
+        !finalConfig.server.hmr ||
+        typeof finalConfig.server.hmr !== "object"
+      ) {
+        finalConfig.server.hmr = {}
+      }
+      finalConfig.server.hmr.server = hmrServer
+    }
+  }
+
+  return finalConfig
+}
+
+function getAllowedHosts(): string[] | undefined {
+  const hosts = process.env.__MEDUSA_ADMIN_ADDITIONAL_ALLOWED_HOSTS
+  if (!hosts) {
+    return undefined
+  }
+  return hosts.split(",").map((host) => host.trim())
 }
 
 function getHmrConfig(hmrPort: number): HmrOptions | boolean {
